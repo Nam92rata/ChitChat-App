@@ -1,0 +1,33 @@
+{
+  "name": "chitchat-backend",
+  "version": "1.0.0",
+  "description": "socket.io based webrtc chatting backend",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node start.js && ./client npm start"
+  },
+  
+  "keywords": [
+    "socket.io",
+    "express",
+    "node",
+    "JS",
+    "Webrtc"
+  ],
+  "author": "Namrata Krishnawat",
+  "license": "ISC",
+  
+  "devDependencies": {
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "morgan": "^1.9.1",
+    "nodemon": "^1.19.1"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.6.4",
+    "socket.io": "^2.2.0"
+  }
+}
