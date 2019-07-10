@@ -18,7 +18,7 @@ import InputBase from '@material-ui/core/InputBase';
 import SendIcon from '@material-ui/icons/Send';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles  } from '@material-ui/core/styles';
-// import InputBox from './InputBox';
+import { Smile, Frown, Meh } from 'react-feather';
 import {Redirect} from "react-router-dom";
 import Button from '@material-ui/core/Button';
 import socketIOClient from "socket.io-client";
@@ -221,7 +221,7 @@ class ChatPage extends Component{
           <div className={classes.toolbar} />
           {this.state.messages.map(el=>{
             return(
-              <div>{el.username} : {el.message}</div>
+              <div>{el.username} : {el.message} : {el.status}</div>
             )
           }
 

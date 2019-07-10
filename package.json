@@ -7,7 +7,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node start.js && ./client npm start"
   },
-  
   "keywords": [
     "socket.io",
     "express",
@@ -17,7 +16,6 @@
   ],
   "author": "Namrata Krishnawat",
   "license": "ISC",
-  
   "devDependencies": {
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
@@ -25,9 +23,14 @@
     "nodemon": "^1.19.1"
   },
   "dependencies": {
+    "@webscopeio/react-textarea-autocomplete": "^4.6.1",
+    "aylien_textapi": "^0.7.0",
+    "babel-polyfill": "^6.26.0",
     "body-parser": "^1.19.0",
+    "emoji-mart": "^2.11.1",
     "express": "^4.17.1",
     "mongoose": "^5.6.4",
+    "react-feather": "^2.0.3",
     "socket.io": "^2.2.0"
   }
 }

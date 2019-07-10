@@ -3,6 +3,7 @@ import app from './app';
 import socketIo from "socket.io";
 const port = process.env.PORT || 4000
 const server = http.createServer(app);
+var AYLIENTextAPI = require('aylien_textapi');
 
 server.listen(port, ()=>{
     console.log("Server is running on port "+ port);
@@ -11,6 +12,21 @@ server.listen(port, ()=>{
 
 const io = socketIo.listen(server);
 
+var textapi = new AYLIENTextAPI({
+  application_id: "APP_ID",
+  application_key: "API_KEY"
+});
+
+const analyseSentiment = (msg) =>{
+     let val= '';
+     textapi.sentiment({'text': msg}, function(error, response) {
+        if (error === null) {
+          console.log(response.polarity);
+          val= response.polarity;
+        }                
+      });
+      return val
+}
 
 
 let users = {};
@@ -42,11 +58,12 @@ io.on('connection', (socket) => {
 
     socket.on('message', (data) => {
         console.log(data)
-        console.log(data.username)
+        console.log(analyseSentiment(data.message))
         io.emit('message', {
             username: data.username,
             message: data.message,
-            uid: data.uid
+            uid: data.uid,
+            status: analyseSentiment(data.message)
         });
     });
 
