@@ -1,8 +1,15 @@
 import http from 'http';
 import app from './app';
 import socketIo from "socket.io";
+const port = process.env.PORT || 4000
+const server = http.createServer(app);
 
-const io = socketIo(server);
+server.listen(port, ()=>{
+    console.log("Server is running on port "+ port);
+});
+
+
+const io = socketIo.listen(server);
 
 
 
@@ -23,16 +30,20 @@ io.on('connection', (socket) => {
         };
 
     if (users[user.uid] !== undefined) {
+        console.log("user1")
         createSocket(user);
         socket.emit('updateUsersList', getUsers());
     }
     else {
+        console.log("user2")
         createUser(user);
         io.emit('updateUsersList', getUsers());
     }
 
     socket.on('message', (data) => {
-        socket.broadcast.emit('message', {
+        console.log(data)
+        console.log(data.username)
+        io.emit('message', {
             username: data.username,
             message: data.message,
             uid: data.uid
@@ -91,9 +102,3 @@ const removeSocket = (socket_id) => {
     }
 };
 
-const port = process.env.PORT || 4000
-const server = http.createServer(app);
-
-server.listen(port, ()=>{
-    console.log("Server is running on port "+ port);
-});

@@ -13,11 +13,15 @@ import ListItemText from '@material-ui/core/ListItemText';
 import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
+import InputBase from '@material-ui/core/InputBase';
+import SendIcon from '@material-ui/icons/Send';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles  } from '@material-ui/core/styles';
-import InputBox from './InputBox';
+// import InputBox from './InputBox';
 import {Redirect} from "react-router-dom";
 import Button from '@material-ui/core/Button';
+import socketIOClient from "socket.io-client";
 const drawerWidth = 240;
 
 const styles = theme => ({
@@ -50,6 +54,25 @@ const styles = theme => ({
     flexGrow: 1,
     padding: theme.spacing(3),
   },
+  root_input: {
+    padding: '2px 4px',
+    display: 'flex',
+    alignItems: 'center',
+    width: '400',
+    position:'fixed',
+  },
+  input: {
+    marginLeft: 8,
+    flex: 1,
+  },
+  iconButton: {
+    padding: 10,
+  },
+  divider: {
+    width: 1,
+    height: 28,
+    margin: 4,
+  }
 });
 
 class ChatPage extends Component{
@@ -57,17 +80,60 @@ class ChatPage extends Component{
       super(props);
       this.state={
         mobileOpen:false,
-        loggedin:true
+        loggedin:true,
+        response:[],
+        message:'',
+        messages:[],
+        recepient:'',
+        socket:null
       }
+    }
+    
+    handleChange=(evt)=>{
+      this.setState({
+        message:evt.target.value 
+    })
+    }
+    handleSend=()=>{
+      console.log(this.state.message)
+      this.state.socket.emit('message', {username:localStorage.getItem('username'),
+                                          uid:localStorage.getItem('uid'),
+                                           message:this.state.message});
+      // this.setState({
+      //   messages:[...this.state.messages,{sender: localStorage.getItem('username'), message:this.state.message}]
+      // })
+      console.log(this.state.messages)
+    }
+    componentDidMount(){      
+      const endpoint = "http://localhost:4000/";
+      const socket = socketIOClient(endpoint,{
+      query:'username='+localStorage.getItem('username')+'&uid='+localStorage.getItem('uid')});
+      console.log("socket",socket)
+      socket.on("updateUsersList", users =>{
+        console.log("data", users);
+        this.setState({ response: users });
+      }
+      )
+      socket.on('message', message=>{
+        this.setState({
+          messages:this.state.messages.concat(message)
+        })}
+      )
+      console.log(this.state.messages)
+      this.setState({socket})
     }
     handleDrawerToggle=() =>{
       this.setState({mobileOpen:!this.state.mobileOpen});
+    }
+    handleRecepient=(el)=>{
+      console.log(el)
+      this.setState({recepient:el })
     }
     changeLogoutStateHandler=()=>{
       localStorage.removeItem('username')
       localStorage.removeItem('uid')
       localStorage.removeItem('name')
-      this.setState({loggedin:false})
+      this.setState({loggedin:false})      
     }
     render(){
       const { classes,container } = this.props;
@@ -76,18 +142,22 @@ class ChatPage extends Component{
           <div className={classes.toolbar} />
           <Divider />
           <List>
-            {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-              <ListItem button key={text}>
-                <ListItemIcon>
-                  <Avatar>
-                    <i className="material-icons" style={{color:'darkblue'}}>
-                      person
-                    </i>
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItem>
-            ))}
+            {
+              this.state.response.map(el=>{
+                return(
+                  <ListItem button key={el} value={el} onClick={this.handleRecepient.bind(this,el)}>
+                    <ListItemIcon>
+                      <Avatar>
+                        <i className="material-icons" style={{color:'darkblue'}}>
+                          person
+                        </i>
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText primary={el} />
+                  </ListItem>
+                )
+              })
+              }
           </List>
           <Divider />          
         </div>
@@ -108,12 +178,13 @@ class ChatPage extends Component{
                 <MenuIcon />
               </IconButton>
               <Typography variant="h6" noWrap>
-                CHITCHAT
+                CHITCHAT with {this.state.recepient}
               </Typography>
               <IconButton color="inherit" edge="end">  
                 <Button color="inherit" onClick={this.changeLogoutStateHandler}>Logout</Button>
-              </IconButton>
+            </IconButton>
             </Toolbar>
+            
           </AppBar>
           <nav className={classes.drawer} aria-label="Mailbox folders">
             <Hidden smUp implementation="css">
@@ -148,19 +219,32 @@ class ChatPage extends Component{
 
         <main className={classes.content}>
           <div className={classes.toolbar} />
-          <Typography paragraph>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-            ut labore et dolore magna aliqua. Rhoncus dolor purus non enim praesent elementum
-            facilisis leo vel. Risus at ultrices mi tempus imperdiet. Semper risus in hendrerit
-            gravida rutrum quisque non tellus. Convallis convallis tellus id interdum velit laoreet id
-            donec ultrices. Odio morbi quis commodo odio aenean sed adipiscing. Amet nisl suscipit
-            adipiscing bibendum est ultricies integer quis. Cursus euismod quis viverra nibh cras.
-            Metus vulputate eu scelerisque felis imperdiet proin fermentum leo. Mauris commodo quis
-            imperdiet massa tincidunt. Cras tincidunt lobortis feugiat vivamus at augue. At augue eget
-            arcu dictum varius duis at consectetur lorem. Velit sed ullamcorper morbi tincidunt. Lorem
-            donec massa sapien faucibus et molestie ac.
-          </Typography>
-          <InputBox/>
+          {this.state.messages.map(el=>{
+            return(
+              <div>{el.username} : {el.message}</div>
+            )
+          }
+
+          )}
+          {/* <InputBox position="fixed" socket={this.state.socket}/> */}
+          <Paper className={classes.root_input}>
+              <IconButton className={classes.iconButton} aria-label="Menu">
+              <i className="material-icons">
+                tag_faces
+              </i>
+              </IconButton>
+              <InputBase
+                className={classes.input}
+                placeholder="Type your message..."
+                inputProps={{ 'aria-label': 'Type message' }}
+                onChange={this.handleChange}
+              />
+              
+              <Divider className={classes.divider} />
+              <IconButton color="primary" className={classes.iconButton} aria-label="Directions" onClick={this.handleSend}>
+                <SendIcon />
+              </IconButton>
+          </Paper>
         </main>
 
         </div>
