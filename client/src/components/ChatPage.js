@@ -18,10 +18,15 @@ import InputBase from '@material-ui/core/InputBase';
 import SendIcon from '@material-ui/icons/Send';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles  } from '@material-ui/core/styles';
-import { Smile, Frown, Meh } from 'react-feather';
+import 'emoji-mart/css/emoji-mart.css'
+import { Picker } from 'emoji-mart'
 import {Redirect} from "react-router-dom";
 import Button from '@material-ui/core/Button';
 import socketIOClient from "socket.io-client";
+import ChatRoom from './ChatRoom';
+import Grid from '@material-ui/core/Grid';
+import { Z_FIXED } from 'zlib';
+import Container from '@material-ui/core/Container';
 const drawerWidth = 240;
 
 const styles = theme => ({
@@ -57,13 +62,21 @@ const styles = theme => ({
   root_input: {
     padding: '2px 4px',
     display: 'flex',
-    alignItems: 'center',
-    width: '400',
-    position:'fixed',
+    flexDirection: 'row',
+    position: 'fixed',
+    bottom: '10px',  
+    border:'solid black'    
+  },
+  root_input_inner: {
+    padding: '2px 2px',
+    display: 'flex',
+    flexDirection: 'row',
+    border:'solid black'
   },
   input: {
-    marginLeft: 8,
-    flex: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    width:'80%'
   },
   iconButton: {
     padding: 10,
@@ -84,8 +97,10 @@ class ChatPage extends Component{
         response:[],
         message:'',
         messages:[],
-        recepient:'',
-        socket:null
+        socket:null,
+        username2:'',
+        personalChatRoom: false,
+        showEmojiPicker:false
       }
     }
     
@@ -94,15 +109,28 @@ class ChatPage extends Component{
         message:evt.target.value 
     })
     }
-    handleSend=()=>{
-      console.log(this.state.message)
-      this.state.socket.emit('message', {username:localStorage.getItem('username'),
-                                          uid:localStorage.getItem('uid'),
-                                           message:this.state.message});
-      // this.setState({
-      //   messages:[...this.state.messages,{sender: localStorage.getItem('username'), message:this.state.message}]
-      // })
-      console.log(this.state.messages)
+    handleSend=(evt)=>{
+      evt.preventDefault();
+      console.log(this.state.message, this.state.mobileOpen)
+      if(this.state.personalChatRoom){
+        this.state.socket.emit('personalMessage', {
+          username2: this.state.username2,
+          username: localStorage.getItem('username'),
+          uid: localStorage.getItem('uid'),
+          message: this.state.message
+        });
+
+      }else{
+        this.state.socket.emit('message', {
+          username: localStorage.getItem('username'),
+          uid: localStorage.getItem('uid'),
+          message: this.state.message
+        });
+      }
+      this.setState({message:''})
+      if(this.state.showEmojiPicker){
+        this.setState({showEmojiPicker:!this.state.showEmojiPicker});
+      }
     }
     componentDidMount(){      
       const endpoint = "http://localhost:4000/";
@@ -110,7 +138,7 @@ class ChatPage extends Component{
       query:'username='+localStorage.getItem('username')+'&uid='+localStorage.getItem('uid')});
       console.log("socket",socket)
       socket.on("updateUsersList", users =>{
-        console.log("data", users);
+        // console.log("data", users);
         this.setState({ response: users });
       }
       )
@@ -119,33 +147,73 @@ class ChatPage extends Component{
           messages:this.state.messages.concat(message)
         })}
       )
-      console.log(this.state.messages)
+      socket.on('personalMessage', message => {
+        this.setState({
+          messages: this.state.messages.concat(message)
+        })
+      }
+      )
+      // console.log(this.state.messages)
       this.setState({socket})
     }
     handleDrawerToggle=() =>{
       this.setState({mobileOpen:!this.state.mobileOpen});
     }
-    handleRecepient=(el)=>{
-      console.log(el)
-      this.setState({recepient:el })
-    }
     changeLogoutStateHandler=()=>{
       localStorage.removeItem('username')
       localStorage.removeItem('uid')
       localStorage.removeItem('name')
-      this.setState({loggedin:false})      
+      this.setState({loggedin:false})        
     }
+
+    onClickHandler=(username)=>{
+      
+        // console.log("username2", username);
+        this.setState({ username2: username, personalChatRoom: true });
+        if(this.state.mobileOpen){
+          this.setState({mobileOpen:!this.state.mobileOpen});
+        }
+      
+    }
+
+    addEmoji = (e) => {
+      let emoji = e.native;
+      // console.log(this.state.message + emoji)
+      this.setState({message : this.state.message + emoji}) 
+     
+    }
+    handleMart=()=>{
+      this.setState({showEmojiPicker:!this.state.showEmojiPicker})
+    }
+  
+
     render(){
+      // console.log(this.state.messages)
       const { classes,container } = this.props;
       const drawer = (
         <div>
           <div className={classes.toolbar} />
+          Hello {localStorage.getItem('username')}
           <Divider />
-          <List>
+          <List >
+            <ListItem button selected={this.state.username2===''?true:false} onClick={() => {this.setState({personalChatRoom: false, username2:''})
+                                                                                              if(this.state.mobileOpen){
+                                                                                                this.setState({mobileOpen:!this.state.mobileOpen});
+                                                                                              }}}>
+              <ListItemIcon>
+                <Avatar>
+                  <i className="material-icons" style={{ color: 'darkblue' }}>
+                    group
+                        </i>
+                </Avatar>
+              </ListItemIcon>
+              <ListItemText primary="ChatRoom"/>
+            </ListItem>
             {
               this.state.response.map(el=>{
+                if(el!==localStorage.getItem('username')){
                 return(
-                  <ListItem button key={el} value={el} onClick={this.handleRecepient.bind(this,el)}>
+                  <ListItem button selected={this.state.username2===el?true:false} key={el} value={el} onClick={()=>this.onClickHandler(el)}>
                     <ListItemIcon>
                       <Avatar>
                         <i className="material-icons" style={{color:'darkblue'}}>
@@ -156,6 +224,7 @@ class ChatPage extends Component{
                     <ListItemText primary={el} />
                   </ListItem>
                 )
+                }
               })
               }
           </List>
@@ -178,7 +247,7 @@ class ChatPage extends Component{
                 <MenuIcon />
               </IconButton>
               <Typography variant="h6" noWrap>
-                CHITCHAT with {this.state.recepient}
+                {this.state.username2?this.state.username2:"Group"}
               </Typography>
               <IconButton color="inherit" edge="end">  
                 <Button color="inherit" onClick={this.changeLogoutStateHandler}>Logout</Button>
@@ -219,34 +288,64 @@ class ChatPage extends Component{
 
         <main className={classes.content}>
           <div className={classes.toolbar} />
-          {this.state.messages.map(el=>{
+          {/* {this.state.messages.map(el=>{
             return(
               <div>{el.username} : {el.message} : {el.status}</div>
             )
           }
 
-          )}
-          {/* <InputBox position="fixed" socket={this.state.socket}/> */}
-          <Paper className={classes.root_input}>
-              <IconButton className={classes.iconButton} aria-label="Menu">
-              <i className="material-icons">
-                tag_faces
-              </i>
-              </IconButton>
-              <InputBase
-                className={classes.input}
-                placeholder="Type your message..."
-                inputProps={{ 'aria-label': 'Type message' }}
-                onChange={this.handleChange}
-              />
-              
-              <Divider className={classes.divider} />
-              <IconButton color="primary" className={classes.iconButton} aria-label="Directions" onClick={this.handleSend}>
-                <SendIcon />
-              </IconButton>
-          </Paper>
-        </main>
+          )} */}
+          <ChatRoom personalChatRoom={this.state.personalChatRoom}
+           username2={this.state.username2}
+           messages={this.state.messages}/>
 
+          {/* <InputBox position="fixed" socket={this.state.socket}/> */}
+          <Container component="main" maxWidth="xs">
+            <div className={classes.root_input}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={12}>
+                  
+                  <form onSubmit={this.handleSend}>
+                  <Paper className={classes.root_input_inner}>
+                  <IconButton className={classes.iconButton} aria-label="Menu">
+                  <i className="material-icons" onClick={this.handleMart}>
+                    tag_faces
+                  </i>                  
+                  </IconButton>
+                  <InputBase
+                    className={classes.input}                    
+                    placeholder="Type your message..."
+                    inputProps={{ 'aria-label': 'Type message' }}
+                    onChange={this.handleChange}
+                    value={this.state.message}
+                  />
+                  
+                  <Divider className={classes.divider} />
+                  <IconButton color="primary" className={classes.iconButton} aria-label="Directions" onClick={this.handleSend}>
+                    <SendIcon />
+                  </IconButton>  
+                  </Paper>              
+                  </form>
+                  
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                {this.state.showEmojiPicker ? (
+                  <Picker set="emojione" onSelect={this.addEmoji} className={classes.root_input_inner} />
+                ) : null}
+                </Grid>
+              </Grid>
+              
+              
+              
+              {/* <br/>
+              <div>
+                {this.state.showEmojiPicker ? (
+                  <Picker set="emojione" onSelect={this.addEmoji} style={{width:'80%'}} />
+                ) : null}
+              </div>  */}
+            </div>
+            </Container>
+        </main>
         </div>
       )
     }

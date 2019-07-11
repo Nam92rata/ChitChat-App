@@ -1,6 +1,8 @@
 import http from 'http';
 import app from './app';
 import socketIo from "socket.io";
+require("babel-core/register");
+require("babel-polyfill");
 const port = process.env.PORT || 4000
 const server = http.createServer(app);
 var AYLIENTextAPI = require('aylien_textapi');
@@ -13,19 +15,24 @@ server.listen(port, ()=>{
 const io = socketIo.listen(server);
 
 var textapi = new AYLIENTextAPI({
-  application_id: "APP_ID",
-  application_key: "API_KEY"
+    application_id: "APP_ID",
+    application_key: "API_KEY"
 });
 
 const analyseSentiment = (msg) =>{
-     let val= '';
-     textapi.sentiment({'text': msg}, function(error, response) {
-        if (error === null) {
-          console.log(response.polarity);
-          val= response.polarity;
-        }                
-      });
-      return val
+    let pol= '';     
+    return new Promise(resolve=>{
+        textapi.sentiment({'text': msg}, function(error, response) {
+            if (error === null) {
+              console.log("RESPONSE",response.polarity);
+              pol= response.polarity;
+              resolve(pol);
+            }        
+            else{
+                console.log(error)
+            }        
+          });
+    })
 }
 
 
@@ -58,13 +65,32 @@ io.on('connection', (socket) => {
 
     socket.on('message', (data) => {
         console.log(data)
-        console.log(analyseSentiment(data.message))
-        io.emit('message', {
-            username: data.username,
-            message: data.message,
-            uid: data.uid,
-            status: analyseSentiment(data.message)
-        });
+        var stat=analyseSentiment(data.message)
+            .then((res)=>{                
+                console.log("HERE",res)
+                io.emit('message', {
+                    username: data.username,
+                    message: data.message,
+                    uid: data.uid,
+                    status: res
+                });})
+            .catch(err=>{console.log("ERR", err)})
+    });
+
+    socket.on('personalMessage', (data) => {
+        console.log(data)
+        var stat=analyseSentiment(data.message)
+            .then((res)=>{
+                console.log("HERE",res)
+                io.emit('personalMessage', {
+                    username: data.username,
+                    username2: data.username2,
+                    message: data.message,
+                    uid: data.uid,
+                    status: res
+                });
+                })
+            .catch(err=>{console.log("ERR", err)})
     });
 
     socket.on('disconnect', () => {

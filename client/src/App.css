@@ -37,3 +37,10 @@
   color: crimson;
   font-weight: bold;
 }
+
+.Chat {
+  padding : 3px;
+  margin : 3;
+  background-color:'pink'
+  
+}
