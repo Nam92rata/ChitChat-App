@@ -18,8 +18,8 @@ import InputBase from '@material-ui/core/InputBase';
 import SendIcon from '@material-ui/icons/Send';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles  } from '@material-ui/core/styles';
-import 'emoji-mart/css/emoji-mart.css'
-import { Picker } from 'emoji-mart'
+import 'emoji-mart/css/emoji-mart.css';
+import { Picker } from 'emoji-mart';
 import {Redirect} from "react-router-dom";
 import Button from '@material-ui/core/Button';
 import socketIOClient from "socket.io-client";
@@ -40,6 +40,7 @@ const styles = theme => ({
     },
   },
   appBar: {
+    flexGrow:1,
     marginLeft: drawerWidth,
     [theme.breakpoints.up('sm')]: {
       width: `calc(100% - ${drawerWidth}px)`,
@@ -60,18 +61,33 @@ const styles = theme => ({
     padding: theme.spacing(3),
   },
   root_input: {
+    flexGrow: 1,
     padding: '2px 4px',
     display: 'flex',
     flexDirection: 'row',
     position: 'fixed',
     bottom: '10px',  
-    border:'solid black'    
+    right:'2px',
+    [theme.breakpoints.up('sm')]: {
+      left: `${drawerWidth+2}px`,
+    },
+       
   },
   root_input_inner: {
+    flexGrow: 1,
     padding: '2px 2px',
     display: 'flex',
     flexDirection: 'row',
-    border:'solid black'
+    borderRadius: '25px' ,
+    width:'auto'
+  },
+  root_input_emoji:{
+    flexGrow: 1,
+    background:'black' ,
+    backgroundColor:'black',
+    [theme.breakpoints.up('sm')]: {
+      width: `calc(100% - ${drawerWidth+2}px)`,
+    }
   },
   input: {
     display: 'flex',
@@ -188,12 +204,12 @@ class ChatPage extends Component{
   
 
     render(){
-      // console.log(this.state.messages)
+      console.log("Mobile ",this.state.mobileOpen)
       const { classes,container } = this.props;
       const drawer = (
         <div>
           <div className={classes.toolbar} />
-          Hello {localStorage.getItem('username')}
+          <div style={{fontFamily: 'Josefin Sans', color: 'navy', fontWeight: 'bold', fontSize:'20px'}}>Hello {localStorage.getItem('username')}</div>
           <Divider />
           <List >
             <ListItem button selected={this.state.username2===''?true:false} onClick={() => {this.setState({personalChatRoom: false, username2:''})
@@ -246,12 +262,12 @@ class ChatPage extends Component{
               >
                 <MenuIcon />
               </IconButton>
-              <Typography variant="h6" noWrap>
+              <Typography variant="h6" noWrap style={{flexGrow:1,fontFamily:'Josefin Sans',fontSize:'24px',fontWeight:'bold'}}>
                 {this.state.username2?this.state.username2:"Group"}
               </Typography>
-              <IconButton color="inherit" edge="end">  
+                
                 <Button color="inherit" onClick={this.changeLogoutStateHandler}>Logout</Button>
-            </IconButton>
+            
             </Toolbar>
             
           </AppBar>
@@ -295,12 +311,14 @@ class ChatPage extends Component{
           }
 
           )} */}
+          
           <ChatRoom personalChatRoom={this.state.personalChatRoom}
            username2={this.state.username2}
            messages={this.state.messages}/>
-
+          
+        
           {/* <InputBox position="fixed" socket={this.state.socket}/> */}
-          <Container component="main" maxWidth="xs">
+          {/* <Container component="main" maxWidth="xs"> */}
             <div className={classes.root_input}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={12}>
@@ -330,12 +348,10 @@ class ChatPage extends Component{
                 </Grid>
                 <Grid item xs={12} sm={12}>
                 {this.state.showEmojiPicker ? (
-                  <Picker set="emojione" onSelect={this.addEmoji} className={classes.root_input_inner} />
+                  <Picker set="google" onSelect={this.addEmoji} className={classes.root_input_emoji} />
                 ) : null}
                 </Grid>
               </Grid>
-              
-              
               
               {/* <br/>
               <div>
@@ -344,7 +360,8 @@ class ChatPage extends Component{
                 ) : null}
               </div>  */}
             </div>
-            </Container>
+            {/* </Container> */}
+            
         </main>
         </div>
       )

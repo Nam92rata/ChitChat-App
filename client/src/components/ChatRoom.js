@@ -27,9 +27,10 @@ const ChatRoom=(props)=>{
         return (
             <div >
                 {personalMessages.map(el=>{
-                    return <Paper  style={{padding : '3px',margin : 3,
-                        'backgroundColor':'pink',textAlign:el.username===localStorage.getItem('username')?'left':'right'}}>
-                        {el.username} : {el.message} : {el.status==="positive"?<Smile/>:el.status==="negative"?<Frown/>:<Meh/>}</Paper>                    
+                    return <div  style={{padding : '3px',margin : 3, textAlign:el.username===localStorage.getItem('username')?'right':'left'}}>
+                        <span style={{fontFamily: 'Josefin Sans', color: 'crimson',fontWeight: 'bold'}}>{el.username}</span>
+                        <br/>
+                        <span style={{fontSize: '18px',wordBreak: 'break-all'}}>{el.message}</span> <span style={{color: 'crimson'}}>{el.status==="positive"?<Smile/>:el.status==="negative"?<Frown/>:<Meh/>}</span></div>                    
                 })}
             </div>
         )
@@ -38,9 +39,10 @@ const ChatRoom=(props)=>{
         return (
             <div >
                 {generalMessages.map(el => {
-                    return <Paper  style={{padding : '3px',margin : 3,
-                    'backgroundColor':'pink',textAlign:el.username===localStorage.getItem('username')?'left':'right'}}>
-                        {el.username} : {el.message} : {el.status==="positive"?<Smile/>:el.status==="negative"?<Frown/>:<Meh/>}</Paper>
+                    return <div  style={{padding : '3px',margin : 3,textAlign:el.username===localStorage.getItem('username')?'right':'left'}}>
+                        <span style={{fontFamily: 'Josefin Sans', color: 'dodgerblue',fontWeight: 'bold'}}>{el.username}</span>
+                        <br/>
+                        <span style={{fontSize: '18px',wordBreak: 'break-all'}}>{el.message}</span> <span style={{color: 'dodgerblue'}}>{el.status==="positive"?<Smile/>:el.status==="negative"?<Frown/>:<Meh/>}</span></div>                        
                 })}
             </div>
         )

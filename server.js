@@ -15,8 +15,8 @@ server.listen(port, ()=>{
 const io = socketIo.listen(server);
 
 var textapi = new AYLIENTextAPI({
-    application_id: "APP_ID",
-    application_key: "API_KEY"
+    application_id: "ec347054",
+    application_key: "a4db3a04111fe65560b402ed855aad53"
 });
 
 const analyseSentiment = (msg) =>{

@@ -37,6 +37,12 @@
   color: crimson;
   font-weight: bold;
 }
+.font_welcome {
+  font-family: 'Josefin Sans';
+  color: 'navy';
+  font-weight: 'bold';
+  font-size:'20px';
+}
 
 .Chat {
   padding : 3px;
