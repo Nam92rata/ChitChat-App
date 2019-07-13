@@ -1,8 +1,7 @@
 import http from 'http';
 import app from './app';
 import socketIo from "socket.io";
-require("babel-core/register");
-require("babel-polyfill");
+
 const port = process.env.PORT || 4000
 const server = http.createServer(app);
 var AYLIENTextAPI = require('aylien_textapi');

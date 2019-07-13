@@ -10,7 +10,6 @@ class HomePage extends Component{
                     <ChatPage/>
                 </div>
             )
-
         }else{
             return(
                 <div>
@@ -18,7 +17,6 @@ class HomePage extends Component{
                 </div>
             )
         }
-        
     }
 }
 export default HomePage;

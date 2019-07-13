@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import SignupPage from './SignupPage'
-import { Typography, TextField, InputAdornment, IconButton } from '@material-ui/core';
+import {  TextField, InputAdornment, IconButton } from '@material-ui/core';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
 import axios from 'axios';
 import Button from '@material-ui/core/Button';
@@ -9,7 +9,6 @@ import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
 import {Redirect} from "react-router-dom";
-import HomePage from './HomePage';
 class LoginPage extends Component {
     constructor(props){
         super(props)
@@ -32,9 +31,9 @@ class LoginPage extends Component {
     handleSubmit= (evt)=>{
         evt.preventDefault();
         const email= this.state.email;
-        const password= this.state.password;        
-        this.validateUser(email,password);       
-        
+        const password= this.state.password; 
+        console.log(email,password)       
+        this.validateUser(email,password);  
     }
     
     handleClickShowPassword = () =>{
@@ -48,17 +47,15 @@ class LoginPage extends Component {
             password:password
           };
         if(email && password){
-          axios.post(`http://localhost:4000/signIn`,  user )
+          axios.post("https://blooming-dusk-33325.herokuapp.com/signIn",  user )
             .then(res => {
               console.log(res);
               console.log(res.data);
               localStorage.setItem("username",res.data.token.username);
               localStorage.setItem("uid",res.data.token.uid);
               localStorage.setItem("name",res.data.token.name);
-              console.log("Validating",localStorage.getItem('username'));
-            //   this.props.changeLoginStateHandler();            
+              console.log("Validating",localStorage.getItem('username'));           
               this.setState({error:''})
-              
             })
             .catch(error=>{
                 this.setState({error:'Invalid credentials'})
@@ -94,9 +91,9 @@ class LoginPage extends Component {
                     <CssBaseline />
                     <div style={{marginTop: 50}} >
                         
-                        <h2 className="font">
+                        <h1 className="font">
                         Let's ChitChat
-                        </h2>
+                        </h1>
                         {this.state.error && <div style={{color:'red',textAlign:'center'}}>{this.state.error}</div>} 
                         <form onSubmit={(evt)=>this.handleSubmit(evt)} >
                         <TextField
@@ -108,7 +105,7 @@ class LoginPage extends Component {
                             required
                             autoFocus
                             margin="normal"  
-                            onBlur={e=>{this.onChange(e)}}                            
+                            onChange={e=>{this.onChange(e)}}                            
                         />
                         <TextField
                             id="filled-adornment-password" 
@@ -119,7 +116,7 @@ class LoginPage extends Component {
                             margin="normal"
                             type={this.state.showPassword ? 'text':'password'}
                             variant="outlined"
-                            onBlur={e=>{this.onChange(e)}}
+                            onChange={e=>{this.onChange(e)}}
                             InputProps={{
                                 endAdornment:(
                                     <InputAdornment  position="end">

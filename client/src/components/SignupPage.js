@@ -1,5 +1,5 @@
 import React from 'react';
-import {  Typography, TextField, InputAdornment, IconButton } from '@material-ui/core';
+import { TextField, InputAdornment, IconButton } from '@material-ui/core';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
 import axios from 'axios';
 import Button from '@material-ui/core/Button';
@@ -30,37 +30,42 @@ class SignupPage extends React.Component {
         let value = evt.target.value;
         let name = evt.target.name; 
         this.setState({error:''})
-        this.setState( prevState => {
-            return { 
-               newUser : {
-                        ...prevState.newUser, [name]: value
-                       }
-            }
-         }, () => console.log(this.state.newUser)
-         )               
-    }
-    onChangeEmail=(evt)=>{
-      console.log(evt.target.name,evt.target.value)
-        let value = evt.target.value;
-        let name = evt.target.name; 
-        var re = /^\w+@\w+\.\w+$/;
-        if(re.test(evt.target.value)){
-          this.setState({error:'',
-                      validEmail:true})
+        if(name==="email"){
+          if(this.validateEmail(value)){
+            this.setState( prevState => {
+              return { 
+                newUser : {
+                          ...prevState.newUser, [name]: value
+                        },
+                validEmail:true
+              }
+          }, () => console.log(this.state.newUser)
+          ) 
+          }
+          else{
+            this.setState({validEmail:false,error:'Invalid email'})
+          }
+        }
+        else{ 
           this.setState( prevState => {
               return { 
-                 newUser : {
+                newUser : {
                           ...prevState.newUser, [name]: value
-                         }
+                        }
               }
-           }, () => console.log(this.state.newUser)
-           )
+          }, () => console.log(this.state.newUser)
+          ) 
         }
-        else{
-          this.setState({error:'Invalid email address'})
-        }
-            
+
     }
+    validateEmail=(name) =>{
+      var re = /^\w+@\w+\.\w+$/;
+      if(re.test(name)){
+        return true
+      }
+      return false
+    }
+    
     onChangeUsername=(evt)=>{
         console.log(evt.target.name,evt.target.value)
         let value = evt.target.value;
@@ -75,28 +80,21 @@ class SignupPage extends React.Component {
          }, () => console.log(this.state.newUser)
          )
          
-        // axios.get(`http://localhost:4000/users`)
-        // .then(res => {
-        // // console.log(res);
-        // console.log(res.data.usersList.users); 
-        // var ans= res.data.usersList.users.some(function (el) { 
-        //     if(el.username === value){
-        //         return true
-        //     }
-        //   })
-
-        // if(ans){
-        //     this.setState({usernameAvailable:false})
-        //     console.log("User name already taken")
-        // }
-        // else{
-        //     this.setState({usernameAvailable:true})
-        //     console.log("Available")
-        // } 
-        // })
-        // .catch(error=>{
-        //     console.log(error)                       
-        // }) 
+        axios.get(`https://blooming-dusk-33325.herokuapp.com/users/${value}`)
+        .then(res => {
+          console.log(res); 
+          if(res.data.message==="User exists"){
+              this.setState({usernameAvailable:false})
+              console.log("User name already taken")
+          }
+          else{
+              this.setState({usernameAvailable:true})
+              console.log("Available")
+          } 
+        })
+        .catch(error=>{
+            console.log(error)                       
+        }) 
     }
 
     handleSubmit= (evt)=>{
@@ -114,8 +112,8 @@ class SignupPage extends React.Component {
           };
         console.log(username,name,email,password,this.state.usernameAvailable,this.state.validEmail)
         if(username && name && email && password ){
-          if(this.state.usernameAvailable){
-            axios.post(`http://localhost:4000/signUp`,  user )
+          if(this.state.usernameAvailable && this.state.validEmail){
+            axios.post(`https://blooming-dusk-33325.herokuapp.com/signUp`,  user )
             .then(res => {
             console.log(res);
             console.log(res.data);            
@@ -128,7 +126,12 @@ class SignupPage extends React.Component {
             })
           }
           else{
-            this.setState({error:'Username already taken'})             
+            if(!this.state.usernameAvailable){
+              this.setState({error:'Username already taken'}) 
+            }            
+            else{
+              this.setState({error:'Invalid Email'})
+            }
           }
         }
         else{
@@ -153,9 +156,9 @@ class SignupPage extends React.Component {
             <CssBaseline />
               <div style={{marginTop: 50}}>
               
-              <Typography component="h1" variant="h5">
+              <h1 className="font">
                 Sign up
-              </Typography>
+              </h1>
               {this.state.error && <div style={{color:'red',textAlign:'center'}}>{this.state.error}</div>}
               <form onSubmit={(evt)=>this.handleSubmit(evt)}>
                 <Grid container spacing={2}>
@@ -212,8 +215,8 @@ class SignupPage extends React.Component {
                         label="Email"
                         fullWidth
                         required
-                        margin="normal"                         
-                        onBlur={e=>{this.onChangeEmail(e)}} 
+                        margin="normal"                                                 
+                        onChange={e=>{this.onChange(e)}} 
                         InputProps={{
                           endAdornment:(
                               <InputAdornment  position="end">
@@ -221,13 +224,13 @@ class SignupPage extends React.Component {
                                       aria-label="Valid email"                                      
                                           >
                                       {this.state.newUser.email?
-                                        this.state.validEmail ? 
+                                        (this.state.validEmail ? 
                                           <i className="material-icons" style={{fontSize:'30px', marginTop:'auto',color: 'green'}}>
                                               check
                                           </i> : 
                                           <i className="material-icons" style={{fontSize:'30px', marginTop:'auto',color: 'red'}}>
                                               close
-                                          </i>:<i></i>}
+                                          </i>):<i></i>}
                                   </IconButton>
                               </InputAdornment>
                           )

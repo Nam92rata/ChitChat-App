@@ -25,9 +25,8 @@ import Button from '@material-ui/core/Button';
 import socketIOClient from "socket.io-client";
 import ChatRoom from './ChatRoom';
 import Grid from '@material-ui/core/Grid';
-import { Z_FIXED } from 'zlib';
-import Container from '@material-ui/core/Container';
 const drawerWidth = 240;
+
 
 const styles = theme => ({
   root: {
@@ -37,6 +36,7 @@ const styles = theme => ({
     [theme.breakpoints.up('sm')]: {
       width: drawerWidth,
       flexShrink: 0,
+      backgroundColor: 'aliceblue'
     },
   },
   appBar: {
@@ -79,10 +79,13 @@ const styles = theme => ({
     display: 'flex',
     flexDirection: 'row',
     borderRadius: '25px' ,
-    width:'auto'
+    width:'auto',
+    margin:'20px'
   },
   root_input_emoji:{
     flexGrow: 1,
+    position: 'fixed',
+    top: '500px',
     background:'black' ,
     backgroundColor:'black',
     [theme.breakpoints.up('sm')]: {
@@ -101,6 +104,15 @@ const styles = theme => ({
     width: 1,
     height: 28,
     margin: 4,
+  },
+  chatroom:{
+    paddingBottom:'100px'
+  },
+  chatroom_new:{
+    paddingBottom:'300px'
+  },
+  emojiPicker:{
+      width: '100%'
   }
 });
 
@@ -127,7 +139,6 @@ class ChatPage extends Component{
     }
     handleSend=(evt)=>{
       evt.preventDefault();
-      console.log(this.state.message, this.state.mobileOpen)
       if(this.state.personalChatRoom){
         this.state.socket.emit('personalMessage', {
           username2: this.state.username2,
@@ -148,8 +159,8 @@ class ChatPage extends Component{
         this.setState({showEmojiPicker:!this.state.showEmojiPicker});
       }
     }
-    componentDidMount(){      
-      const endpoint = "http://localhost:4000/";
+    componentDidMount(){ 
+      const endpoint = "https://blooming-dusk-33325.herokuapp.com/";
       const socket = socketIOClient(endpoint,{
       query:'username='+localStorage.getItem('username')+'&uid='+localStorage.getItem('uid')});
       console.log("socket",socket)
@@ -169,8 +180,11 @@ class ChatPage extends Component{
         })
       }
       )
-      // console.log(this.state.messages)
-      this.setState({socket})
+        this.setState({socket})
+      }
+      
+    componentDidUpdate(){
+      window.scrollTo(0,document.body.scrollHeight);
     }
     handleDrawerToggle=() =>{
       this.setState({mobileOpen:!this.state.mobileOpen});
@@ -179,43 +193,41 @@ class ChatPage extends Component{
       localStorage.removeItem('username')
       localStorage.removeItem('uid')
       localStorage.removeItem('name')
+      this.state.socket.emit("disconnect")
+      this.state.socket.disconnect()
       this.setState({loggedin:false})        
     }
 
     onClickHandler=(username)=>{
-      
-        // console.log("username2", username);
         this.setState({ username2: username, personalChatRoom: true });
         if(this.state.mobileOpen){
           this.setState({mobileOpen:!this.state.mobileOpen});
         }
-      
     }
 
     addEmoji = (e) => {
-      let emoji = e.native;
-      // console.log(this.state.message + emoji)
+      let emoji=e.native;      
       this.setState({message : this.state.message + emoji}) 
      
     }
-    handleMart=()=>{
+    handleMart=()=>{      
       this.setState({showEmojiPicker:!this.state.showEmojiPicker})
     }
-  
 
     render(){
-      console.log("Mobile ",this.state.mobileOpen)
       const { classes,container } = this.props;
       const drawer = (
         <div>
           <div className={classes.toolbar} />
-          <div style={{fontFamily: 'Josefin Sans', color: 'navy', fontWeight: 'bold', fontSize:'20px'}}>Hello {localStorage.getItem('username')}</div>
+          <div style={{fontFamily: 'Josefin Sans', color: 'navy', fontWeight: 'bold', fontSize:'20px'}}>
+            Hello {localStorage.getItem('username')}</div>
           <Divider />
           <List >
-            <ListItem button selected={this.state.username2===''?true:false} onClick={() => {this.setState({personalChatRoom: false, username2:''})
-                                                                                              if(this.state.mobileOpen){
-                                                                                                this.setState({mobileOpen:!this.state.mobileOpen});
-                                                                                              }}}>
+            <ListItem button selected={this.state.username2===''?true:false} 
+                onClick={() => {this.setState({personalChatRoom: false, username2:''})
+                          if(this.state.mobileOpen){
+                            this.setState({mobileOpen:!this.state.mobileOpen});
+                          }}}>
               <ListItemIcon>
                 <Avatar>
                   <i className="material-icons" style={{ color: 'darkblue' }}>
@@ -229,7 +241,8 @@ class ChatPage extends Component{
               this.state.response.map(el=>{
                 if(el!==localStorage.getItem('username')){
                 return(
-                  <ListItem button selected={this.state.username2===el?true:false} key={el} value={el} onClick={()=>this.onClickHandler(el)}>
+                  <ListItem button selected={this.state.username2===el?true:false} key={el} value={el} 
+                    onClick={()=>this.onClickHandler(el)}>
                     <ListItemIcon>
                       <Avatar>
                         <i className="material-icons" style={{color:'darkblue'}}>
@@ -251,7 +264,7 @@ class ChatPage extends Component{
       return(
         <div className={classes.root}>
           <CssBaseline />
-          <AppBar position="fixed" className={classes.appBar}>
+          <AppBar position="fixed" className={classes.appBar} color="secondary">
             <Toolbar>
               <IconButton
                 color="inherit"
@@ -265,18 +278,14 @@ class ChatPage extends Component{
               <Typography variant="h6" noWrap style={{flexGrow:1,fontFamily:'Josefin Sans',fontSize:'24px',fontWeight:'bold'}}>
                 {this.state.username2?this.state.username2:"Group"}
               </Typography>
-                
                 <Button color="inherit" onClick={this.changeLogoutStateHandler}>Logout</Button>
-            
             </Toolbar>
-            
           </AppBar>
           <nav className={classes.drawer} aria-label="Mailbox folders">
             <Hidden smUp implementation="css">
               <Drawer
                 container={container}
                 variant="temporary"
-                // anchor={theme.direction === 'rtl' ? 'right' : 'left'}
                 open={this.state.mobileOpen}
                 onClose={this.handleDrawerToggle}
                 classes={{
@@ -304,25 +313,17 @@ class ChatPage extends Component{
 
         <main className={classes.content}>
           <div className={classes.toolbar} />
-          {/* {this.state.messages.map(el=>{
-            return(
-              <div>{el.username} : {el.message} : {el.status}</div>
-            )
-          }
-
-          )} */}
-          
-          <ChatRoom personalChatRoom={this.state.personalChatRoom}
-           username2={this.state.username2}
-           messages={this.state.messages}/>
-          
-        
-          {/* <InputBox position="fixed" socket={this.state.socket}/> */}
-          {/* <Container component="main" maxWidth="xs"> */}
+          <div className={this.state.showEmojiPicker?classes.chatroom_new:classes.chatroom}> 
+            <ChatRoom personalChatRoom={this.state.personalChatRoom}
+            username2={this.state.username2}
+            messages={this.state.messages} />
+            <div style={{ float:"left", clear: "both" }}
+             ref={(el) => { this.messagesEnd = el; }}>
+            </div>
+          </div>
             <div className={classes.root_input}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={12}>
-                  
                   <form onSubmit={this.handleSend}>
                   <Paper className={classes.root_input_inner}>
                   <IconButton className={classes.iconButton} aria-label="Menu">
@@ -337,31 +338,21 @@ class ChatPage extends Component{
                     onChange={this.handleChange}
                     value={this.state.message}
                   />
-                  
                   <Divider className={classes.divider} />
                   <IconButton color="primary" className={classes.iconButton} aria-label="Directions" onClick={this.handleSend}>
                     <SendIcon />
                   </IconButton>  
                   </Paper>              
                   </form>
-                  
                 </Grid>
-                <Grid item xs={12} sm={12}>
+                <Grid item xs={12} sm={12}>  
                 {this.state.showEmojiPicker ? (
-                  <Picker set="google" onSelect={this.addEmoji} className={classes.root_input_emoji} />
-                ) : null}
+                  <Picker set="emojione" search={false} onSelect={this.addEmoji} 
+                    className={classes.root_input_emoji} style={{width:'100%',height: '250px', overflow: 'hidden'}} />
+                    ) : null}
                 </Grid>
-              </Grid>
-              
-              {/* <br/>
-              <div>
-                {this.state.showEmojiPicker ? (
-                  <Picker set="emojione" onSelect={this.addEmoji} style={{width:'80%'}} />
-                ) : null}
-              </div>  */}
+              </Grid>              
             </div>
-            {/* </Container> */}
-            
         </main>
         </div>
       )
@@ -371,9 +362,8 @@ class ChatPage extends Component{
         <div>
             <Redirect to = "/login"/>
         </div>
-    )
-    }
-    }
+    )}
+  }
 }
 
 ChatPage.propTypes = {

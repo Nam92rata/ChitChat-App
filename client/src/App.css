@@ -1,4 +1,10 @@
 @import url('https://fonts.googleapis.com/css?family=Josefin+Sans');
+
+
+.body{
+  background-image:url('./assets/pic5.jpg')
+}
+
 .App {
   text-align: center;
 }
